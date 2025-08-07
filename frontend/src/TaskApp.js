@@ -26,8 +26,8 @@ function TaskApp() {
 
   const fetchTasks = async () => {
     try {
-      const url = searchQuery 
-        ? `${TASKS_API_URL}/search?q=${searchQuery}&type=${taskType}` 
+      const url = searchQuery
+        ? `${TASKS_API_URL}/search?q=${searchQuery}&type=${taskType}`
         : `${TASKS_API_URL}?type=${taskType}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
@@ -69,67 +69,6 @@ function TaskApp() {
     } catch (error) {
       console.error('担当者リストの取得に失敗しました:', error);
     }
-  };
-
-  
-
-  
-
-  const handleCommentChange = (taskId, assigneeName, newComment) => {
-    setTasks(prevTasks => {
-      return prevTasks.map(task => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            assignees: task.assignees.map(assignee => {
-              if (assignee.name === assigneeName) {
-                return { ...assignee, comment: newComment };
-              }
-              return assignee;
-            }),
-          };
-        }
-        return task;
-      });
-    });
-  };
-
-  const handleCommentChange = (taskId, assigneeName, newComment) => {
-    setTasks(prevTasks => {
-      return prevTasks.map(task => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            assignees: task.assignees.map(assignee => {
-              if (assignee.name === assigneeName) {
-                return { ...assignee, comment: newComment };
-              }
-              return assignee;
-            }),
-          };
-        }
-        return task;
-      });
-    });
-  };
-
-  const handleCommentChange = (taskId, assigneeName, newComment) => {
-    setTasks(prevTasks => {
-      return prevTasks.map(task => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            assignees: task.assignees.map(assignee => {
-              if (assignee.name === assigneeName) {
-                return { ...assignee, comment: newComment };
-              }
-              return assignee;
-            }),
-          };
-        }
-        return task;
-      });
-    });
   };
 
   const handleCommentChange = (taskId, assigneeName, newComment) => {
@@ -328,3 +267,86 @@ function TaskApp() {
                               placeholder="コメント"
                             />
                             <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
+                          </div>
+                        ))}
+                      </td>
+                      <td>
+                        <button onClick={() => setEditingTaskId(task.id)} className="edit-button">編集</button>
+                        <button onClick={() => deleteTask(task.id)} className="delete-button">削除</button>
+                        <button onClick={() => handleCopyTask(task)} className="copy-button">コピー</button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>期限切れタスク</h2>
+      <div className="task-table-container">
+        <table className="task-table">
+          <thead>
+            <tr>
+              <th>タスク内容</th>
+              <th>期限</th>
+              <th>担当者と進捗</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {overdueTasks.map((task) => (
+              <tr key={task.id} className="overdue">
+                {editingTaskId === task.id ? (
+                  <TaskEditForm
+                    task={task}
+                    assigneeSuggestions={assigneeSuggestions}
+                    onSave={handleUpdateTask}
+                    onCancel={() => setEditingTaskId(null)}
+                  />
+                ) : (
+                  <>
+                    <td>{task.taskName}</td>
+                    <td>
+                      {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      <span className="due-today-icon">期限切れ！</span>
+                    </td>
+                    <td>
+                      {task.assignees.map((assignee) => (
+                        <div key={assignee.name} className="assignee-item">
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={assignee.completed}
+                              onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed, assignee.comment)}
+                            />
+                            {assignee.name}
+                            {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
+                          </label>
+                          <textarea
+                            value={assignee.comment || ''}
+                            onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
+                            placeholder="コメント"
+                          />
+                          <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
+                        </div>
+                      ))}
+                    </td>
+                    <td>
+                      <button onClick={() => setEditingTaskId(task.id)} className="edit-button">編集</button>
+                      <button onClick={() => deleteTask(task.id)} className="delete-button">削除</button>
+                      <button onClick={() => handleCopyTask(task)} className="copy-button">コピー</button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export default TaskApp;
