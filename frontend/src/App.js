@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import TaskApp from './TaskApp';
 import AddTaskPage from './AddTaskPage';
 import LoginPage from './LoginPage'; // 追加
+import RegisterPage from './RegisterPage'; // 追加
 import { AuthProvider, useAuth } from './AuthContext'; // 追加
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       <AuthProvider> {/* AuthProvider でラップ */}
         <Routes>
           <Route path="/login" element={<LoginPage />} /> {/* ログインページ */}
+          <Route path="/register" element={<RegisterPage />} /> {/* 登録ページ */}
 
           {/* 保護されたルート */}
           <Route path="/tasks/:taskType" element={<PrivateRoute><TaskApp /></PrivateRoute>} />

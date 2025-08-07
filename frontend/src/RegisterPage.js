@@ -4,39 +4,38 @@ import './TaskApp.css'; // 既存のCSSを再利用
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-function LoginPage() {
+function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // トークンを保存
-        navigate('/tasks/office'); // ログイン成功後、タスク一覧へ
+        alert('登録が完了しました。ログインしてください。');
+        navigate('/login');
       } else {
-        alert('ログインに失敗しました。');
+        alert('登録に失敗しました。ユーザー名が既に存在するか、入力が正しくありません。');
       }
     } catch (error) {
-      console.error('ログインエラー:', error);
-      alert('ログイン中にエラーが発生しました。');
+      console.error('登録エラー:', error);
+      alert('登録中にエラーが発生しました。');
     }
   };
 
   return (
     <div className="task-app-container">
       <div className="app-header">
-        <h1>ログイン</h1>
+        <h1>新規登録</h1>
       </div>
-      <form onSubmit={handleLogin} className="task-form">
+      <form onSubmit={handleRegister} className="task-form">
         <input
           type="text"
           placeholder="ユーザー名"
@@ -51,11 +50,11 @@ function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="submit-button">ログイン</button>
-        <button type="button" onClick={() => navigate('/register')} className="manage-assignees-button">新規登録はこちら</button>
+        <button type="submit" className="submit-button">登録</button>
+        <button type="button" onClick={() => navigate('/login')} className="manage-assignees-button">ログインはこちら</button>
       </form>
     </div>
   );
 }
 
-export default LoginPage;
+export default RegisterPage;

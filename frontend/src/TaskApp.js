@@ -16,8 +16,6 @@ function TaskApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false);
   const [newAssigneeName, setNewAssigneeName] = useState('');
-  const [registerUsername, setRegisterUsername] = useState(''); // 追加
-  const [registerPassword, setRegisterPassword] = useState(''); // 追加
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null); // 追加
   
@@ -134,28 +132,6 @@ function TaskApp() {
     }
   };
 
-  const handleRegisterUser = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: registerUsername, password: registerPassword }),
-      });
-
-      if (response.ok) {
-        alert('ユーザー登録が完了しました。');
-        setRegisterUsername('');
-        setRegisterPassword('');
-      } else {
-        alert('ユーザー登録に失敗しました。ユーザー名が既に存在するか、入力が正しくありません。');
-      }
-    } catch (error) {
-      console.error('ユーザー登録エラー:', error);
-      alert('ユーザー登録中にエラーが発生しました。');
-    }
-  };
-
   const handleDeleteAssignee = async (name) => {
     if (window.confirm(`担当者「${name}」を候補リストから削除しますか？`)) {
       const response = await fetch(`${ASSIGNEES_API_URL}/${encodeURIComponent(name)}`, { method: 'DELETE' });
@@ -204,25 +180,6 @@ function TaskApp() {
                 required
               />
               <button type="submit">追加</button>
-            </form>
-
-            <h3>新規ユーザー登録</h3> {/* 追加 */}
-            <form onSubmit={handleRegisterUser} className="add-assignee-form"> {/* add-assignee-form を再利用 */}
-              <input
-                type="text"
-                placeholder="ユーザー名"
-                value={registerUsername}
-                onChange={(e) => setRegisterUsername(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="パスワード"
-                value={registerPassword}
-                onChange={(e) => setRegisterPassword(e.target.value)}
-                required
-              />
-              <button type="submit">登録</button>
             </form>
             <ul className="assignee-management-list">
               {assigneeSuggestions.map(name => (
