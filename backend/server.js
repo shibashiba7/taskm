@@ -1,0 +1,243 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const tasksFilePath = path.join(__dirname, 'tasks.json');
+const assigneesFilePath = path.join(__dirname, 'assignees.json');
+
+const corsOptions = {
+  origin: 'https://shibashiba7.github.io',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// --- Assignee Functions ---
+const readAssignees = () => {
+  try {
+    const data = fs.readFileSync(assigneesFilePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.message.includes('Unexpected end of JSON input')) {
+      return [];
+    }
+    throw error;
+  }
+};
+
+const writeAssignees = (assignees) => {
+  fs.writeFileSync(assigneesFilePath, JSON.stringify(assignees, null, 2));
+};
+
+// --- Task Functions ---
+const readTasks = () => {
+  try {
+    const data = fs.readFileSync(tasksFilePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.message.includes('Unexpected end of JSON input')) {
+      return [];
+    }
+    throw error;
+  }
+};
+
+const writeTasks = (tasks) => {
+  fs.writeFileSync(tasksFilePath, JSON.stringify(tasks, null, 2));
+};
+
+// --- Assignee API Endpoints ---
+app.get('/api/assignees', (req, res) => {
+  res.json(readAssignees());
+});
+
+app.post('/api/assignees', (req, res) => {
+  const assignees = readAssignees();
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).send('Assignee name is required.');
+  }
+  if (assignees.includes(name)) {
+    return res.status(409).send('Assignee already exists.');
+  }
+
+  assignees.push(name);
+  writeAssignees(assignees);
+  res.status(201).json({ name });
+});
+
+app.delete('/api/assignees/:name', (req, res) => {
+  let assignees = readAssignees();
+  const nameToDelete = req.params.name;
+  const updatedAssignees = assignees.filter(a => a !== nameToDelete);
+
+  if (assignees.length === updatedAssignees.length) {
+    return res.status(404).send('Assignee not found.');
+  }
+
+  writeAssignees(updatedAssignees);
+  res.status(204).send();
+});
+
+
+// --- Task API Endpoints ---
+app.get('/api/tasks', (req, res) => {
+  res.json(readTasks());
+});
+
+app.get('/api/tasks/search', (req, res) => {
+  const query = req.query.q ? req.query.q.toLowerCase() : '';
+  const tasks = readTasks();
+  if (!query) {
+    return res.json(tasks);
+  }
+
+  const filteredTasks = tasks.filter(task => {
+    const taskNameMatch = task.taskName.toLowerCase().includes(query);
+    const assigneeMatch = task.assignees.some(assignee => assignee.name.toLowerCase().includes(query));
+    return taskNameMatch || assigneeMatch;
+  });
+  res.json(filteredTasks);
+});
+
+app.post('/api/tasks', (req, res) => {
+  const tasks = readTasks();
+  const { taskName, assignees, dueDate } = req.body;
+
+  if (!taskName || !assignees || !dueDate) {
+    return res.status(400).send('Task name, assignees, and due date are required.');
+  }
+
+  const assigneeNames = assignees.split(',').map(name => name.trim());
+
+  // Add new assignees to the central list
+  const allAssignees = readAssignees();
+  let updated = false;
+  assigneeNames.forEach(name => {
+    if (!allAssignees.includes(name)) {
+      allAssignees.push(name);
+      updated = true;
+    }
+  });
+  if (updated) {
+    writeAssignees(allAssignees);
+  }
+
+  const assigneeArray = assigneeNames.map(name => ({
+    name: name,
+    completed: false,
+    completedAt: null,
+    comment: ''
+  }));
+
+  const newTask = {
+    id: Date.now(),
+    taskName,
+    dueDate,
+    assignees: assigneeArray,
+  };
+
+  tasks.push(newTask);
+  writeTasks(tasks);
+  res.status(201).json(newTask);
+});
+
+app.put('/api/tasks/:id/assignee', (req, res) => {
+  const tasks = readTasks();
+  const taskId = parseInt(req.params.id);
+  const { assigneeName, completed, comment } = req.body;
+
+  const taskIndex = tasks.findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) {
+    return res.status(404).send('Task not found');
+  }
+
+  const task = tasks[taskIndex];
+  const assigneeIndex = task.assignees.findIndex(a => a.name === assigneeName);
+  if (assigneeIndex === -1) {
+    return res.status(404).send('Assignee not found');
+  }
+
+  task.assignees[assigneeIndex].completed = completed;
+  task.assignees[assigneeIndex].completedAt = completed ? new Date().toISOString() : null;
+  if (comment !== undefined) {
+    task.assignees[assigneeIndex].comment = comment;
+  }
+
+  writeTasks(tasks);
+  res.json(task);
+});
+
+app.put('/api/tasks/:id', (req, res) => {
+  const tasks = readTasks();
+  const taskId = parseInt(req.params.id);
+  const { taskName, assignees, dueDate } = req.body;
+
+  const taskIndex = tasks.findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) {
+    return res.status(404).send('Task not found.');
+  }
+
+  if (!taskName || !assignees || !dueDate) {
+    return res.status(400).send('Task name, assignees, and due date are required.');
+  }
+
+  const assigneeNames = assignees.split(',').map(name => name.trim());
+
+  // Add new assignees to the central list
+  const allAssignees = readAssignees();
+  let updatedAssigneesList = false;
+  assigneeNames.forEach(name => {
+    if (!allAssignees.includes(name)) {
+      allAssignees.push(name);
+      updatedAssigneesList = true;
+    }
+  });
+  if (updatedAssigneesList) {
+    writeAssignees(allAssignees);
+  }
+
+  const assigneeArray = assigneeNames.map(name => {
+    // Preserve existing completion status and comment if assignee already exists for this task
+    const existingAssignee = tasks[taskIndex].assignees.find(a => a.name === name);
+    return {
+      name: name,
+      completed: existingAssignee ? existingAssignee.completed : false,
+      completedAt: existingAssignee ? existingAssignee.completedAt : null,
+      comment: existingAssignee ? existingAssignee.comment : ''
+    };
+  });
+
+  const updatedTask = {
+    ...tasks[taskIndex],
+    taskName,
+    dueDate,
+    assignees: assigneeArray,
+  };
+
+  tasks[taskIndex] = updatedTask;
+  writeTasks(tasks);
+  res.json(updatedTask);
+});
+
+app.delete('/api/tasks/:id', (req, res) => {
+  let tasks = readTasks();
+  const taskId = parseInt(req.params.id);
+  const updatedTasks = tasks.filter((t) => t.id !== taskId);
+
+  if (tasks.length === updatedTasks.length) {
+    return res.status(404).send('Task not found');
+  }
+
+  writeTasks(updatedTasks);
+  res.status(204).send();
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
