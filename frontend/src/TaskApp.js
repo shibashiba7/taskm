@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom'; // 追加
 import TaskEditForm from './TaskEditForm';
 import './TaskApp.css';
@@ -23,10 +23,10 @@ function TaskApp() {
   useEffect(() => {
     fetchTasks();
     fetchAssignees();
-    fetchDeletedTasks(); // 追加
-  }, [searchQuery, taskType, fetchTasks, fetchAssignees, fetchDeletedTasks]); // fetchDeletedTasks も依存配列に追加
+    fetchDeletedTasks();
+  }, [searchQuery, taskType]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const url = searchQuery
         ? `${TASKS_API_URL}/search?q=${searchQuery}&type=${taskType}`
@@ -63,9 +63,9 @@ function TaskApp() {
     } catch (error) {
       console.error('Fetch Error:', error);
     }
-  };
+  }, [searchQuery, taskType]);
 
-  const fetchAssignees = async () => {
+  const fetchAssignees = useCallback(async () => {
     try {
       const response = await fetch(ASSIGNEES_API_URL);
       if (!response.ok) throw new Error('Network response was not ok');
@@ -74,9 +74,9 @@ function TaskApp() {
     } catch (error) {
       console.error('担当者リストの取得に失敗しました:', error);
     }
-  };
+  }, []);
 
-  const fetchDeletedTasks = async () => {
+  const fetchDeletedTasks = useCallback(async () => {
     try {
       const url = `${TASKS_API_URL}?type=${taskType}&deleted=true`;
       const response = await fetch(url);
@@ -86,7 +86,7 @@ function TaskApp() {
     } catch (error) {
       console.error('削除済みタスクの取得に失敗しました:', error);
     }
-  };
+  }, [taskType]);
 
   
 
