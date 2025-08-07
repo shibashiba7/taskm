@@ -130,8 +130,7 @@ app.post('/api/tasks', (req, res) => {
   const assigneeArray = assigneeNames.map(name => ({
     name: name,
     completed: false,
-    completedAt: null,
-    comment: ''
+    completedAt: null
   }));
 
   const newTask = {
@@ -149,7 +148,7 @@ app.post('/api/tasks', (req, res) => {
 app.put('/api/tasks/:id/assignee', (req, res) => {
   const tasks = readTasks();
   const taskId = parseInt(req.params.id);
-  const { assigneeName, completed, comment } = req.body;
+  const { assigneeName, completed } = req.body;
 
   const taskIndex = tasks.findIndex((t) => t.id === taskId);
   if (taskIndex === -1) {
@@ -164,9 +163,6 @@ app.put('/api/tasks/:id/assignee', (req, res) => {
 
   task.assignees[assigneeIndex].completed = completed;
   task.assignees[assigneeIndex].completedAt = completed ? new Date().toISOString() : null;
-  if (comment !== undefined) {
-    task.assignees[assigneeIndex].comment = comment;
-  }
 
   writeTasks(tasks);
   res.json(task);
@@ -207,8 +203,7 @@ app.put('/api/tasks/:id', (req, res) => {
     return {
       name: name,
       completed: existingAssignee ? existingAssignee.completed : false,
-      completedAt: existingAssignee ? existingAssignee.completedAt : null,
-      comment: existingAssignee ? existingAssignee.comment : ''
+      completedAt: existingAssignee ? existingAssignee.completedAt : null
     };
   });
 
