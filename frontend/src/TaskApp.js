@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; // 追加
+import { useNavigate, useParams } from 'react-router-dom';
 import TaskEditForm from './TaskEditForm';
 import './TaskApp.css';
 
@@ -8,8 +8,8 @@ const TASKS_API_URL = `${API_BASE_URL}/api/tasks`;
 const ASSIGNEES_API_URL = `${API_BASE_URL}/api/assignees`;
 
 function TaskApp() {
-  const navigate = useNavigate(); // 追加
-  const { taskType } = useParams(); // 追加
+  const navigate = useNavigate();
+  const { taskType } = useParams();
   const [tasks, setTasks] = useState([]);
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [upcomingTasks, setUpcomingTasks] = useState([]);
@@ -17,8 +17,7 @@ function TaskApp() {
   const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false);
   const [newAssigneeName, setNewAssigneeName] = useState('');
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
-  const [editingTaskId, setEditingTaskId] = useState(null); // 追加
-  
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   useEffect(() => {
     fetchTasks();
@@ -34,21 +33,18 @@ function TaskApp() {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
-      // isDeleted が false のタスクのみをフィルタリング
       const activeTasks = data.filter(task => !task.isDeleted);
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const filteredOverdue = activeTasks.filter(task => { // activeTasks を使用
+      const filteredOverdue = activeTasks.filter(task => {
         const dueDate = new Date(task.dueDate);
-
         return dueDate.getTime() < today.getTime();
       });
 
-      const filteredUpcoming = activeTasks.filter(task => { // activeTasks を使用
+      const filteredUpcoming = activeTasks.filter(task => {
         const dueDate = new Date(task.dueDate);
-
         return dueDate.getTime() >= today.getTime();
       }).sort((a, b) => {
         const dateA = new Date(a.dueDate);
@@ -58,7 +54,7 @@ function TaskApp() {
 
       setOverdueTasks(filteredOverdue);
       setUpcomingTasks(filteredUpcoming);
-      setTasks(activeTasks); // tasks stateも更新しておく
+      setTasks(activeTasks);
     } catch (error) {
       console.error('Fetch Error:', error);
     }
@@ -75,15 +71,11 @@ function TaskApp() {
     }
   }, []);
 
-  
-
-  
-
-  const handleAssigneeUpdate = async (task, assigneeName, completed, comment) => {
+  const handleAssigneeUpdate = async (task, assigneeName, completed) => {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ assigneeName, completed }),
+      body: JSON.stringify({ assigneeName, completed }),
     });
     if (response.ok) fetchTasks();
   };
@@ -96,8 +88,8 @@ function TaskApp() {
         body: JSON.stringify({ ...updatedData, taskType }),
       });
       if (!response.ok) throw new Error('Network response was not ok');
-      setEditingTaskId(null); // 編集モードを終了
-      fetchTasks(); // タスクリストを再取得
+      setEditingTaskId(null);
+      fetchTasks();
     } catch (error) {
       console.error('タスクの更新に失敗しました:', error);
       alert('タスクの更新に失敗しました。');
@@ -106,9 +98,9 @@ function TaskApp() {
 
   const deleteTask = async (taskId) => {
     if (window.confirm('このタスクを削除しますか？')) {
-      const response = await fetch(`${TASKS_API_URL}/${taskId}`, { method: 'DELETE' }); // type クエリパラメータを削除
+      const response = await fetch(`${TASKS_API_URL}/${taskId}`, { method: 'DELETE' });
       if (response.ok) {
-        fetchTasks(); // アクティブなタスクリストを更新
+        fetchTasks();
       }
     }
   };
@@ -126,7 +118,7 @@ function TaskApp() {
 
     if (response.ok) {
       setNewAssigneeName('');
-      fetchAssignees(); // This will refresh the list
+      fetchAssignees();
     } else if (response.status === 409) {
       alert('この担当者は既に追加されています。');
     }
@@ -156,7 +148,7 @@ function TaskApp() {
         </h1>
         <div>
           <button onClick={() => setIsAssigneeModalOpen(true)} className="manage-assignees-button">担当者管理</button>
-          <button onClick={() => navigate(`/add-task/${taskType}`)} className="add-task-button">タスク追加</button> {/* 追加 */}
+          <button onClick={() => navigate(`/add-task/${taskType}`)} className="add-task-button">タスク追加</button>
           <input
             type="text"
             value={searchQuery}
@@ -208,19 +200,18 @@ function TaskApp() {
           <tbody>
             {upcomingTasks.map((task) => {
               const today = new Date();
-              today.setHours(0, 0, 0, 0); // 今日の日付の0時0分0秒に設定
+              today.setHours(0, 0, 0, 0);
               const dueDate = new Date(task.dueDate);
-       // 期限日の0時0分0秒に設定
 
               const diffTime = dueDate.getTime() - today.getTime();
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
               let rowClassName = '';
-              if (diffDays < 0) { // 期限切れ
+              if (diffDays < 0) { 
                 rowClassName = 'overdue';
-              } else if (diffDays <= 1) { // 1日以内
+              } else if (diffDays <= 1) {
                 rowClassName = 'due-soon-red';
-              } else if (diffDays <= 3) { // 3日以内
+              } else if (diffDays <= 3) {
                 rowClassName = 'due-soon-yellow';
               }
 
@@ -238,7 +229,6 @@ function TaskApp() {
                       <td>{task.taskName}</td>
                       <td>
                         {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
-                        
                       </td>
                       <td>
                         {task.assignees.map((assignee) => (
@@ -247,12 +237,11 @@ function TaskApp() {
                               <input
                                 type="checkbox"
                                 checked={assignee.completed}
-                                onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed, assignee.comment)}
+                                onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed)}
                               />
                               {assignee.name}
                               {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                             </label>
-                            
                           </div>
                         ))}
                       </td>
@@ -296,7 +285,6 @@ function TaskApp() {
                     <td>{task.taskName}</td>
                     <td>
                       {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
-                      
                     </td>
                     <td>
                       {task.assignees.map((assignee) => (
@@ -305,12 +293,11 @@ function TaskApp() {
                             <input
                               type="checkbox"
                               checked={assignee.completed}
-                              onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed, assignee.comment)}
+                              onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed)}
                             />
                             {assignee.name}
                             {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                           </label>
-                          
                         </div>
                       ))}
                     </td>
@@ -326,8 +313,6 @@ function TaskApp() {
           </tbody>
         </table>
       </div>
-
-      
     </div>
   );
 }
