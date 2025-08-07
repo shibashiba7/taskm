@@ -36,7 +36,9 @@ const writeAssignees = (assignees) => {
 const readTasks = () => {
   try {
     const data = fs.readFileSync(tasksFilePath, 'utf8');
-    return JSON.parse(data);
+    const tasks = JSON.parse(data);
+    // isDeleted プロパティがないタスクにデフォルト値を設定
+    return tasks.map(task => ({ ...task, isDeleted: task.isDeleted === undefined ? false : task.isDeleted }));
   } catch (error) {
     if (error.code === 'ENOENT' || error.message.includes('Unexpected end of JSON input')) {
       return [];
@@ -86,8 +88,15 @@ app.delete('/api/assignees/:name', (req, res) => {
 
 // --- Task API Endpoints ---
 app.get('/api/tasks', (req, res) => {
-  const tasks = readTasks();
-  const { type } = req.query;
+  let tasks = readTasks();
+  const { type, deleted } = req.query; // deleted を追加
+
+  // isDeleted でフィルタリング
+  if (deleted === 'true') {
+    tasks = tasks.filter(task => task.isDeleted === true);
+  } else {
+    tasks = tasks.filter(task => task.isDeleted === false);
+  }
 
   if (type) {
     const filteredTasks = tasks.filter(task => task.taskType === type);
@@ -152,6 +161,7 @@ app.post('/api/tasks', (req, res) => {
     dueDate,
     assignees: assigneeArray,
     taskType,
+    isDeleted: false, // 追加
   };
 
   tasks.push(newTask);
@@ -235,16 +245,17 @@ app.put('/api/tasks/:id', (req, res) => {
 });
 
 app.delete('/api/tasks/:id', (req, res) => {
-  let tasks = readTasks();
+  const tasks = readTasks();
   const taskId = parseInt(req.params.id);
-  const updatedTasks = tasks.filter((t) => t.id !== taskId);
+  const taskIndex = tasks.findIndex((t) => t.id === taskId);
 
-  if (tasks.length === updatedTasks.length) {
+  if (taskIndex === -1) {
     return res.status(404).send('Task not found');
   }
 
-  writeTasks(updatedTasks);
-  res.status(204).send();
+  tasks[taskIndex].isDeleted = true; // isDeleted を true に設定
+  writeTasks(tasks);
+  res.status(200).json(tasks[taskIndex]); // 削除されたタスクを返す
 });
 
 

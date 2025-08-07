@@ -18,11 +18,13 @@ function TaskApp() {
   const [newAssigneeName, setNewAssigneeName] = useState('');
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null); // 追加
+  const [deletedTasks, setDeletedTasks] = useState([]); // 追加
 
   useEffect(() => {
     fetchTasks();
     fetchAssignees();
-  }, [searchQuery, taskType]);
+    fetchDeletedTasks(); // 追加
+  }, [searchQuery, taskType, fetchTasks, fetchAssignees, fetchDeletedTasks]); // fetchDeletedTasks も依存配列に追加
 
   const fetchTasks = async () => {
     try {
@@ -33,16 +35,19 @@ function TaskApp() {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
+      // isDeleted が false のタスクのみをフィルタリング
+      const activeTasks = data.filter(task => !task.isDeleted);
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const filteredOverdue = data.filter(task => {
+      const filteredOverdue = activeTasks.filter(task => { // activeTasks を使用
         const dueDate = new Date(task.dueDate);
         dueDate.setHours(0, 0, 0, 0);
         return dueDate.getTime() < today.getTime();
       });
 
-      const filteredUpcoming = data.filter(task => {
+      const filteredUpcoming = activeTasks.filter(task => { // activeTasks を使用
         const dueDate = new Date(task.dueDate);
         dueDate.setHours(0, 0, 0, 0);
         return dueDate.getTime() >= today.getTime();
@@ -54,7 +59,7 @@ function TaskApp() {
 
       setOverdueTasks(filteredOverdue);
       setUpcomingTasks(filteredUpcoming);
-      setTasks(data); // tasks stateも更新しておく
+      setTasks(activeTasks); // tasks stateも更新しておく
     } catch (error) {
       console.error('Fetch Error:', error);
     }
@@ -68,6 +73,18 @@ function TaskApp() {
       setAssigneeSuggestions(data.sort());
     } catch (error) {
       console.error('担当者リストの取得に失敗しました:', error);
+    }
+  };
+
+  const fetchDeletedTasks = async () => {
+    try {
+      const url = `${TASKS_API_URL}?type=${taskType}&deleted=true`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setDeletedTasks(data);
+    } catch (error) {
+      console.error('削除済みタスクの取得に失敗しました:', error);
     }
   };
 
@@ -100,8 +117,11 @@ function TaskApp() {
 
   const deleteTask = async (taskId) => {
     if (window.confirm('このタスクを削除しますか？')) {
-      const response = await fetch(`${TASKS_API_URL}/${taskId}?type=${taskType}`, { method: 'DELETE' });
-      if (response.ok) fetchTasks();
+      const response = await fetch(`${TASKS_API_URL}/${taskId}`, { method: 'DELETE' }); // type クエリパラメータを削除
+      if (response.ok) {
+        fetchTasks(); // アクティブなタスクリストを更新
+        fetchDeletedTasks(); // 削除されたタスクリストを更新
+      }
     }
   };
 
@@ -313,6 +333,46 @@ function TaskApp() {
                     </td>
                   </>
                 )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>削除されたタスク</h2>
+      <div className="task-table-container">
+        <table className="task-table">
+          <thead>
+            <tr>
+              <th>タスク内容</th>
+              <th>期限</th>
+              <th>担当者と進捗</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deletedTasks.map((task) => (
+              <tr key={task.id} className="deleted-task">
+                <td>{task.taskName}</td>
+                <td>{new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                <td>
+                  {task.assignees.map((assignee) => (
+                    <div key={assignee.name} className="assignee-item">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={assignee.completed}
+                          disabled // 削除されたタスクは編集不可
+                        />
+                        {assignee.name}
+                        {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
+                      </label>
+                    </div>
+                  ))}
+                </td>
+                <td>
+                  {/* 削除されたタスクに対する操作ボタン（例: 復元）をここに追加できます */}
+                </td>
               </tr>
             ))}
           </tbody>
