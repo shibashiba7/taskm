@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import './TaskApp.css'; // 既存のCSSを再利用
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -9,6 +9,7 @@ const ASSIGNEES_API_URL = `${API_BASE_URL}/api/assignees`;
 function AddTaskPage() {
   const navigate = useNavigate();
   const location = useLocation(); // useLocationを追加
+  const { taskType } = useParams(); // 追加
   const [taskName, setTaskName] = useState('');
   const [assignees, setAssignees] = useState([]);
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
@@ -41,7 +42,7 @@ function AddTaskPage() {
     e.preventDefault();
     if (!taskName || assignees.length === 0 || !dueDate) return;
 
-    const newTask = { taskName, assignees: [...new Set(assignees)].join(','), dueDate };
+    const newTask = { taskName, assignees: [...new Set(assignees)].join(','), dueDate, taskType };
     const response = await fetch(TASKS_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,7 +54,7 @@ function AddTaskPage() {
       setAssignees([]);
       setDueDate('');
       setCurrentAssignee('');
-      navigate('/'); // タスク一覧ページに戻る
+      navigate(`/tasks/${taskType}`); // タスク一覧ページに戻る
     }
   };
 

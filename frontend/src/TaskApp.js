@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 追加
+import { useNavigate, useParams } from 'react-router-dom'; // 追加
 import TaskEditForm from './TaskEditForm';
 import './TaskApp.css';
 
@@ -9,6 +9,7 @@ const ASSIGNEES_API_URL = `${API_BASE_URL}/api/assignees`;
 
 function TaskApp() {
   const navigate = useNavigate(); // 追加
+  const { taskType } = useParams(); // 追加
   const [tasks, setTasks] = useState([]);
   const [overdueTasks, setOverdueTasks] = useState([]);
   const [upcomingTasks, setUpcomingTasks] = useState([]);
@@ -21,11 +22,13 @@ function TaskApp() {
   useEffect(() => {
     fetchTasks();
     fetchAssignees();
-  }, [searchQuery]);
+  }, [searchQuery, taskType]);
 
   const fetchTasks = async () => {
     try {
-      const url = searchQuery ? `${TASKS_API_URL}/search?q=${searchQuery}` : TASKS_API_URL;
+      const url = searchQuery 
+        ? `${TASKS_API_URL}/search?q=${searchQuery}&type=${taskType}` 
+        : `${TASKS_API_URL}?type=${taskType}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
@@ -74,7 +77,7 @@ function TaskApp() {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assigneeName, completed }),
+      body: JSON.stringify({ assigneeName, completed, taskType }),
     });
     if (response.ok) fetchTasks();
   };
@@ -84,7 +87,7 @@ function TaskApp() {
       const response = await fetch(`${TASKS_API_URL}/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({ ...updatedData, taskType }),
       });
       if (!response.ok) throw new Error('Network response was not ok');
       setEditingTaskId(null); // 編集モードを終了
@@ -97,7 +100,7 @@ function TaskApp() {
 
   const deleteTask = async (taskId) => {
     if (window.confirm('このタスクを削除しますか？')) {
-      const response = await fetch(`${TASKS_API_URL}/${taskId}`, { method: 'DELETE' });
+      const response = await fetch(`${TASKS_API_URL}/${taskId}?type=${taskType}`, { method: 'DELETE' });
       if (response.ok) fetchTasks();
     }
   };
@@ -145,7 +148,7 @@ function TaskApp() {
         </h1>
         <div>
           <button onClick={() => setIsAssigneeModalOpen(true)} className="manage-assignees-button">担当者管理</button>
-          <button onClick={() => navigate('/add-task')} className="add-task-button">タスク追加</button> {/* 追加 */}
+          <button onClick={() => navigate(`/add-task/${taskType}`)} className="add-task-button">タスク追加</button> {/* 追加 */}
           <input
             type="text"
             value={searchQuery}
