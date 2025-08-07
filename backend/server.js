@@ -2,11 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const tasksFilePath = path.join(__dirname, 'tasks.json');
 const assigneesFilePath = path.join(__dirname, 'assignees.json');
+const usersFilePath = path.join(__dirname, 'users.json'); // 追加
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // 環境変数から取得、なければデフォルト値
 
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000', // 環境変数CORS_ORIGINがあればそれを使用、なければlocalhost:3000
@@ -14,6 +18,24 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// 認証ミドルウェア
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401); // トークンがない場合
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403); // トークンが無効な場合
+    req.user = user;
+    next();
+  });
+};
+
+// 保護されたルート
+app.use('/api/tasks', authenticateToken);
+app.use('/api/assignees', authenticateToken);
 
 // --- Assignee Functions ---
 const readAssignees = () => {
@@ -51,6 +73,23 @@ const writeTasks = (tasks) => {
   fs.writeFileSync(tasksFilePath, JSON.stringify(tasks, null, 2));
 };
 
+// --- User Functions ---
+const readUsers = () => {
+  try {
+    const data = fs.readFileSync(usersFilePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.message.includes('Unexpected end of JSON input')) {
+      return [];
+    }
+    throw error;
+  }
+};
+
+const writeUsers = (users) => {
+  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+};
+
 // --- Assignee API Endpoints ---
 app.get('/api/assignees', (req, res) => {
   res.json(readAssignees());
@@ -83,6 +122,48 @@ app.delete('/api/assignees/:name', (req, res) => {
 
   writeAssignees(updatedAssignees);
   res.status(204).send();
+});
+
+// --- Auth API Endpoints ---
+app.post('/api/register', async (req, res) => {
+  const users = readUsers();
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send('Username and password are required.');
+  }
+
+  if (users.find(user => user.username === username)) {
+    return res.status(409).send('User already exists.');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10); // パスワードをハッシュ化
+  const newUser = { username, password: hashedPassword };
+  users.push(newUser);
+  writeUsers(users);
+  res.status(201).send('User registered successfully.');
+});
+
+app.post('/api/login', async (req, res) => {
+  const users = readUsers();
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send('Username and password are required.');
+  }
+
+  const user = users.find(u => u.username === username);
+  if (!user) {
+    return res.status(400).send('Invalid credentials.');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(400).send('Invalid credentials.');
+  }
+
+  const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+  res.json({ token });
 });
 
 
