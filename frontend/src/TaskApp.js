@@ -73,11 +73,13 @@ function TaskApp() {
 
   
 
+  
+
   const handleAssigneeUpdate = async (task, assigneeName, completed) => {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assigneeName, completed, taskType }),
+      body: JSON.stringify({ assigneeName, completed, comment }),
     });
     if (response.ok) fetchTasks();
   };
@@ -144,7 +146,7 @@ function TaskApp() {
             <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
             <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
           </svg>
-          事務タスク
+          タスク一覧
         </h1>
         <div>
           <button onClick={() => setIsAssigneeModalOpen(true)} className="manage-assignees-button">担当者管理</button>
@@ -245,81 +247,11 @@ function TaskApp() {
                               {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                             </label>
                             
-                          </div>
-                        ))}
-                      </td>
-                      <td>
-                        <button onClick={() => deleteTask(task.id)} className="delete-button">削除</button>
-                        <button onClick={() => handleCopyTask(task)} className="copy-button">コピー</button>
-                        <button onClick={() => setEditingTaskId(task.id)} className="edit-button">編集</button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {overdueTasks.length > 0 && (
-        <>
-          <h2>期限切れタスク</h2>
-          <div className="task-table-container">
-            <table className="task-table">
-              <thead>
-                <tr>
-                  <th>タスク内容</th>
-                  <th>期限</th>
-                  <th>担当者と進捗</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {overdueTasks.map((task) => (
-                  <tr key={task.id} className="overdue">
-                    {editingTaskId === task.id ? (
-                      <TaskEditForm
-                        task={task}
-                        assigneeSuggestions={assigneeSuggestions}
-                        onSave={handleUpdateTask}
-                        onCancel={() => setEditingTaskId(null)}
-                      />
-                    ) : (
-                      <>
-                        <td>{task.taskName}</td>
-                        <td>{new Date(task.dueDate).toLocaleDateString()}</td>
-                        <td>
-                          {task.assignees.map((assignee) => (
-                            <div key={assignee.name} className="assignee-item">
-                              <label>
-                                <input
-                                  type="checkbox"
-                                  checked={assignee.completed}
-                                  onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed)}
-                                />
-                                {assignee.name}
-                                {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
-                              </label>
-                              
+                          <div className="comment-input-group">
+                              <textarea
+                                value={assignee.comment || ''}
+                                onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
+                                placeholder="コメント"
+                              />
+                              <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
                             </div>
-                          ))}
-                        </td>
-                        <td>
-                          <button onClick={() => deleteTask(task.id)} className="delete-button">削除</button>
-                          <button onClick={() => setEditingTaskId(task.id)} className="edit-button">編集</button> {/* 編集ボタンを追加 */}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-export default TaskApp;
