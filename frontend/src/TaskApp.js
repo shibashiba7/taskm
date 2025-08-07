@@ -237,7 +237,7 @@ function TaskApp() {
                     <>
                       <td>{task.taskName}</td>
                       <td>
-                        {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}
+                        {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
                         
                       </td>
                       <td>
@@ -295,7 +295,7 @@ function TaskApp() {
                   <>
                     <td>{task.taskName}</td>
                     <td>
-                      {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}
+                      {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
                       
                     </td>
                     <td>
