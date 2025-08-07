@@ -71,30 +71,13 @@ function TaskApp() {
     }
   };
 
-  const handleCommentChange = (taskId, assigneeName, newComment) => {
-    setTasks(prevTasks => {
-      return prevTasks.map(task => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            assignees: task.assignees.map(assignee => {
-              if (assignee.name === assigneeName) {
-                return { ...assignee, comment: newComment };
-              }
-              return assignee;
-            }),
-          };
-        }
-        return task;
-      });
-    });
-  };
+  
 
   const handleAssigneeUpdate = async (task, assigneeName, completed, comment) => {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ assigneeName, completed, comment }),
+                  body: JSON.stringify({ assigneeName, completed }),
     });
     if (response.ok) fetchTasks();
   };
@@ -261,12 +244,7 @@ function TaskApp() {
                               {assignee.name}
                               {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                             </label>
-                            <textarea
-                              value={assignee.comment || ''}
-                              onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                              placeholder="コメント"
-                            />
-                            <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
+                            
                           </div>
                         ))}
                       </td>
@@ -324,12 +302,7 @@ function TaskApp() {
                             {assignee.name}
                             {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                           </label>
-                          <textarea
-                            value={assignee.comment || ''}
-                            onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                            placeholder="コメント"
-                          />
-                          <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
+                          
                         </div>
                       ))}
                     </td>
