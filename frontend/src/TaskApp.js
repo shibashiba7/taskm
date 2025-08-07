@@ -74,7 +74,7 @@ function TaskApp() {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assigneeName, completed, comment }),
+      body: JSON.stringify({ assigneeName, completed }),
     });
     if (response.ok) fetchTasks();
   };
