@@ -86,12 +86,25 @@ app.delete('/api/assignees/:name', (req, res) => {
 
 // --- Task API Endpoints ---
 app.get('/api/tasks', (req, res) => {
-  res.json(readTasks());
+  const tasks = readTasks();
+  const { type } = req.query;
+
+  if (type) {
+    const filteredTasks = tasks.filter(task => task.taskType === type);
+    return res.json(filteredTasks);
+  }
+  res.json(tasks);
 });
 
 app.get('/api/tasks/search', (req, res) => {
   const query = req.query.q ? req.query.q.toLowerCase() : '';
-  const tasks = readTasks();
+  const type = req.query.type;
+  let tasks = readTasks();
+
+  if (type) {
+    tasks = tasks.filter(task => task.taskType === type);
+  }
+
   if (!query) {
     return res.json(tasks);
   }
@@ -106,10 +119,10 @@ app.get('/api/tasks/search', (req, res) => {
 
 app.post('/api/tasks', (req, res) => {
   const tasks = readTasks();
-  const { taskName, assignees, dueDate } = req.body;
+  const { taskName, assignees, dueDate, taskType } = req.body;
 
-  if (!taskName || !assignees || !dueDate) {
-    return res.status(400).send('Task name, assignees, and due date are required.');
+  if (!taskName || !assignees || !dueDate || !taskType) {
+    return res.status(400).send('Task name, assignees, due date, and task type are required.');
   }
 
   const assigneeNames = assignees.split(',').map(name => name.trim());
@@ -138,6 +151,7 @@ app.post('/api/tasks', (req, res) => {
     taskName,
     dueDate,
     assignees: assigneeArray,
+    taskType,
   };
 
   tasks.push(newTask);
@@ -171,15 +185,15 @@ app.put('/api/tasks/:id/assignee', (req, res) => {
 app.put('/api/tasks/:id', (req, res) => {
   const tasks = readTasks();
   const taskId = parseInt(req.params.id);
-  const { taskName, assignees, dueDate } = req.body;
+  const { taskName, assignees, dueDate, taskType } = req.body;
 
   const taskIndex = tasks.findIndex((t) => t.id === taskId);
   if (taskIndex === -1) {
     return res.status(404).send('Task not found.');
   }
 
-  if (!taskName || !assignees || !dueDate) {
-    return res.status(400).send('Task name, assignees, and due date are required.');
+  if (!taskName || !assignees || !dueDate || !taskType) {
+    return res.status(400).send('Task name, assignees, due date, and task type are required.');
   }
 
   const assigneeNames = assignees.split(',').map(name => name.trim());
@@ -212,6 +226,7 @@ app.put('/api/tasks/:id', (req, res) => {
     taskName,
     dueDate,
     assignees: assigneeArray,
+    taskType,
   };
 
   tasks[taskIndex] = updatedTask;
