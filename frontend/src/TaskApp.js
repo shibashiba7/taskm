@@ -68,6 +68,25 @@ function TaskApp() {
     }
   };
 
+  const handleCommentChange = (taskId, assigneeName, newComment) => {
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            assignees: task.assignees.map(assignee => {
+              if (assignee.name === assigneeName) {
+                return { ...assignee, comment: newComment };
+              }
+              return assignee;
+            }),
+          };
+        }
+        return task;
+      });
+    });
+  };
+
   const handleAssigneeUpdate = async (task, assigneeName, completed, comment) => {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
@@ -241,7 +260,8 @@ function TaskApp() {
                             </label>
                             <textarea
                               value={assignee.comment || ''}
-                              onChange={(e) => handleAssigneeUpdate(task, assignee.name, assignee.completed, e.target.value)}
+                              onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
+                              onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                               placeholder="コメント"
                             />
                           </div>
