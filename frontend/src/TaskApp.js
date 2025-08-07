@@ -228,7 +228,12 @@ function TaskApp() {
                     <>
                       <td>{task.taskName}</td>
                       <td>
+<<<<<<< HEAD
                         {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
+=======
+                        {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}
+                        
+>>>>>>> parent of f25c9e8 (feat: Add authentication pages and context, update routing)
                       </td>
                       <td>
                         {task.assignees.map((assignee) => (
@@ -284,7 +289,12 @@ function TaskApp() {
                   <>
                     <td>{task.taskName}</td>
                     <td>
+<<<<<<< HEAD
                       {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
+=======
+                      {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}
+                      
+>>>>>>> parent of f25c9e8 (feat: Add authentication pages and context, update routing)
                     </td>
                     <td>
                       {task.assignees.map((assignee) => (
