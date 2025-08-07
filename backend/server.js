@@ -37,22 +37,7 @@ const authenticateToken = (req, res, next) => {
 app.use('/api/tasks', authenticateToken);
 app.use('/api/assignees', authenticateToken);
 
-// --- Assignee Functions ---
-const readAssignees = () => {
-  try {
-    const data = fs.readFileSync(assigneesFilePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (error.code === 'ENOENT' || error.message.includes('Unexpected end of JSON input')) {
-      return [];
-    }
-    throw error;
-  }
-};
 
-const writeAssignees = (assignees) => {
-  fs.writeFileSync(assigneesFilePath, JSON.stringify(assignees, null, 2));
-};
 
 // --- Task Functions ---
 const readTasks = () => {
@@ -92,35 +77,40 @@ const writeUsers = (users) => {
 
 // --- Assignee API Endpoints ---
 app.get('/api/assignees', (req, res) => {
-  res.json(readAssignees());
+  const users = readUsers();
+  res.json(users.map(user => user.username)); // ユーザー名のみを返す
 });
 
-app.post('/api/assignees', (req, res) => {
-  const assignees = readAssignees();
-  const { name } = req.body;
+app.post('/api/assignees', async (req, res) => { // async を追加
+  const users = readUsers();
+  const { name, password } = req.body; // password を追加
 
-  if (!name) {
-    return res.status(400).send('Assignee name is required.');
-  }
-  if (assignees.includes(name)) {
-    return res.status(409).send('Assignee already exists.');
+  if (!name || !password) { // password のチェックを追加
+    return res.status(400).send('Username and password are required.');
   }
 
-  assignees.push(name);
-  writeAssignees(assignees);
-  res.status(201).json({ name });
+  if (users.find(user => user.username === name)) { // username でチェック
+    return res.status(409).send('User already exists.');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10); // パスワードをハッシュ化
+  const newUser = { username: name, password: hashedPassword }; // username を使用
+  users.push(newUser);
+  writeUsers(users);
+  res.status(201).json({ name }); // name を返す
 });
 
 app.delete('/api/assignees/:name', (req, res) => {
-  let assignees = readAssignees();
+  let users = readUsers();
   const nameToDelete = req.params.name;
-  const updatedAssignees = assignees.filter(a => a !== nameToDelete);
+  const initialLength = users.length;
+  users = users.filter(user => user.username !== nameToDelete); // ユーザーを削除
 
-  if (assignees.length === updatedAssignees.length) {
-    return res.status(404).send('Assignee not found.');
+  if (users.length === initialLength) {
+    return res.status(404).send('User not found.');
   }
 
-  writeAssignees(updatedAssignees);
+  writeUsers(users);
   res.status(204).send();
 });
 
@@ -217,17 +207,11 @@ app.post('/api/tasks', (req, res) => {
 
   const assigneeNames = assignees.split(',').map(name => name.trim());
 
-  // Add new assignees to the central list
-  const allAssignees = readAssignees();
-  let updated = false;
-  assigneeNames.forEach(name => {
-    if (!allAssignees.includes(name)) {
-      allAssignees.push(name);
-      updated = true;
-    }
-  });
-  if (updated) {
-    writeAssignees(allAssignees);
+  // 担当者（ユーザー）が存在するか確認
+  const users = readUsers();
+  const invalidAssignees = assigneeNames.filter(name => !users.some(user => user.username === name));
+  if (invalidAssignees.length > 0) {
+    return res.status(400).send(`Invalid assignees: ${invalidAssignees.join(', ')}. All assignees must be registered users.`);
   }
 
   const assigneeArray = assigneeNames.map(name => ({
@@ -289,17 +273,11 @@ app.put('/api/tasks/:id', (req, res) => {
 
   const assigneeNames = assignees.split(',').map(name => name.trim());
 
-  // Add new assignees to the central list
-  const allAssignees = readAssignees();
-  let updatedAssigneesList = false;
-  assigneeNames.forEach(name => {
-    if (!allAssignees.includes(name)) {
-      allAssignees.push(name);
-      updatedAssigneesList = true;
-    }
-  });
-  if (updatedAssigneesList) {
-    writeAssignees(allAssignees);
+  // 担当者（ユーザー）が存在するか確認
+  const users = readUsers();
+  const invalidAssignees = assigneeNames.filter(name => !users.some(user => user.username === name));
+  if (invalidAssignees.length > 0) {
+    return res.status(400).send(`Invalid assignees: ${invalidAssignees.join(', ')}. All assignees must be registered users.`);
   }
 
   const assigneeArray = assigneeNames.map(name => {
