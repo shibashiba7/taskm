@@ -322,7 +322,8 @@ function TaskApp() {
                               </label>
                               <textarea
                                 value={assignee.comment || ''}
-                                onChange={(e) => handleAssigneeUpdate(task, assignee.name, assignee.completed, e.target.value)}
+                                onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
+                                onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                                 placeholder="コメント"
                               />
                             </div>
