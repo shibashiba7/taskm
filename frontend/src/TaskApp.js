@@ -18,12 +18,11 @@ function TaskApp() {
   const [newAssigneeName, setNewAssigneeName] = useState('');
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null); // 追加
-  const [deletedTasks, setDeletedTasks] = useState([]); // 追加
+  
 
   useEffect(() => {
     fetchTasks();
     fetchAssignees();
-    fetchDeletedTasks();
   }, [searchQuery, taskType]);
 
   const fetchTasks = useCallback(async () => {
@@ -76,17 +75,7 @@ function TaskApp() {
     }
   }, []);
 
-  const fetchDeletedTasks = useCallback(async () => {
-    try {
-      const url = `${TASKS_API_URL}?type=${taskType}&deleted=true`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      setDeletedTasks(data);
-    } catch (error) {
-      console.error('削除済みタスクの取得に失敗しました:', error);
-    }
-  }, [taskType]);
+  
 
   
 
@@ -120,7 +109,6 @@ function TaskApp() {
       const response = await fetch(`${TASKS_API_URL}/${taskId}`, { method: 'DELETE' }); // type クエリパラメータを削除
       if (response.ok) {
         fetchTasks(); // アクティブなタスクリストを更新
-        fetchDeletedTasks(); // 削除されたタスクリストを更新
       }
     }
   };
@@ -339,45 +327,7 @@ function TaskApp() {
         </table>
       </div>
 
-      <h2>削除されたタスク</h2>
-      <div className="task-table-container">
-        <table className="task-table">
-          <thead>
-            <tr>
-              <th>タスク内容</th>
-              <th>期限</th>
-              <th>担当者と進捗</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {deletedTasks.map((task) => (
-              <tr key={task.id} className="deleted-task">
-                <td>{task.taskName}</td>
-                <td>{new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                <td>
-                  {task.assignees.map((assignee) => (
-                    <div key={assignee.name} className="assignee-item">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={assignee.completed}
-                          disabled // 削除されたタスクは編集不可
-                        />
-                        {assignee.name}
-                        {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
-                      </label>
-                    </div>
-                  ))}
-                </td>
-                <td>
-                  {/* 削除されたタスクに対する操作ボタン（例: 復元）をここに追加できます */}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      
     </div>
   );
 }
