@@ -250,7 +250,7 @@ function TaskApp() {
                       <td>{task.taskName}</td>
                       <td>
                         {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                        {diffDays <= 0 && <span className="due-today-icon">本日期限！</span>}
+                        
                       </td>
                       <td>
                         {task.assignees.map((assignee) => (
