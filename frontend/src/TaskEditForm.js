@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function TaskEditForm({ task, assigneeSuggestions, onSave, onCancel }) {
   const [taskName, setTaskName] = useState(task.taskName);
-  const [dueDate, setDueDate] = useState(task.dueDate.split('T')[0]); // YYYY-MM-DD 形式に変換
+  const [dueDate, setDueDate] = useState(task.dueDate.split('.')[0]); // ISO 8601からミリ秒を削除
   const [selectedAssignees, setSelectedAssignees] = useState(task.assignees.map(a => a.name));
   const [newAssigneeInput, setNewAssigneeInput] = useState('');
 
@@ -52,7 +52,7 @@ function TaskEditForm({ task, assigneeSuggestions, onSave, onCancel }) {
         <div className="form-group">
           <label>期日:</label>
           <input
-            type="date"
+            type="datetime-local"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             required

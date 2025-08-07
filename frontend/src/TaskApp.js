@@ -42,13 +42,13 @@ function TaskApp() {
 
       const filteredOverdue = activeTasks.filter(task => { // activeTasks を使用
         const dueDate = new Date(task.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
+
         return dueDate.getTime() < today.getTime();
       });
 
       const filteredUpcoming = activeTasks.filter(task => { // activeTasks を使用
         const dueDate = new Date(task.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
+
         return dueDate.getTime() >= today.getTime();
       }).sort((a, b) => {
         const dateA = new Date(a.dueDate);
@@ -210,7 +210,7 @@ function TaskApp() {
               const today = new Date();
               today.setHours(0, 0, 0, 0); // 今日の日付の0時0分0秒に設定
               const dueDate = new Date(task.dueDate);
-              dueDate.setHours(0, 0, 0, 0); // 期限日の0時0分0秒に設定
+       // 期限日の0時0分0秒に設定
 
               const diffTime = dueDate.getTime() - today.getTime();
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -237,7 +237,7 @@ function TaskApp() {
                     <>
                       <td>{task.taskName}</td>
                       <td>
-                        {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         
                       </td>
                       <td>
@@ -295,7 +295,7 @@ function TaskApp() {
                   <>
                     <td>{task.taskName}</td>
                     <td>
-                      {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       
                     </td>
                     <td>
