@@ -74,7 +74,7 @@ function AddTaskPage() {
     <div className="task-app-container">
       <div className="app-header">
         <h1>新しいタスクを追加</h1>
-        <button onClick={() => navigate('/')} className="manage-assignees-button">タスク一覧に戻る</button>
+        <button onClick={() => navigate(`/tasks/${taskType}`)} className="manage-assignees-button">タスク一覧に戻る</button>
       </div>
 
       <form onSubmit={addTask} className="task-form">
