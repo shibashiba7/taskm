@@ -331,6 +331,23 @@ body {
   cursor: pointer;
 }
 
+.save-comment-button {
+  padding: 3px 6px; /* パディングを小さく */
+  font-size: 0.7em; /* フォントサイズを小さく */
+  margin-left: 5px; /* テキストエリアとの間隔 */
+  background-color: #28a745; /* 緑色 */
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap; /* ボタン内のテキストが改行されないように */
+}
+
+.save-comment-button:hover {
+  background-color: #218838; /* ホバー時の色 */
+}
+
 .manage-assignees-button {
     background-color: #95a5a6;
     color: white;
