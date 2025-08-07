@@ -6,13 +6,14 @@ import LoginPage from './LoginPage'; // 追加
 import RegisterPage from './RegisterPage'; // 追加
 import { AuthProvider, useAuth } from './AuthContext'; // 追加
 
-// 保護されたルートコンポーネント
-const PrivateRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  console.log('isAuthenticated:', isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-
 function App() {
+  // 保護されたルートコンポーネント
+  const PrivateRoute = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    console.log('isAuthenticated:', isAuthenticated);
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+  };
+
   return (
     <Router>
       <AuthProvider> {/* AuthProvider でラップ */}
