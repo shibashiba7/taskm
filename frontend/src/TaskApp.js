@@ -286,7 +286,6 @@ function TaskApp() {
                     <td>
                       {new Date(task.dueDate).toLocaleString('ja-JP', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', hourCycle: 'h23' })}時
                     </td>
-                    </td>
                     <td>
                       {task.assignees.map((assignee) => (
                         <div key={assignee.name} className="assignee-item">
