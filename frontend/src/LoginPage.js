@@ -52,7 +52,6 @@ function LoginPage() {
           required
         />
         <button type="submit" className="submit-button">ログイン</button>
-        <button type="button" onClick={() => navigate('/register')} className="manage-assignees-button">新規登録はこちら</button>
       </form>
     </div>
   );
