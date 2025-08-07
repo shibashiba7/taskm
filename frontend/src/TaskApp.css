@@ -119,6 +119,11 @@ body {
   text-align: center;
 }
 
+.task-table th:nth-child(2),
+.task-table td:nth-child(2) {
+  width: 100px; /* 期限列の幅を調整 */
+}
+
 .task-table th {
   background-color: #ecf0f1; /* Light gray for table headers */
   color: #555;
