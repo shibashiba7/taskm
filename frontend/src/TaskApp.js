@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'; // 追加
 import TaskEditForm from './TaskEditForm';
 import './TaskApp.css';
@@ -17,6 +17,7 @@ function TaskApp() {
   const [newAssigneeName, setNewAssigneeName] = useState('');
   const [assigneeSuggestions, setAssigneeSuggestions] = useState([]);
   const [editingTaskId, setEditingTaskId] = useState(null); // 追加
+  const commentTimeouts = useRef({});
 
   useEffect(() => {
     fetchTasks();
@@ -85,6 +86,24 @@ function TaskApp() {
         return task;
       });
     });
+
+    // 既存のタイマーがあればクリア
+    const timeoutKey = `${taskId}-${assigneeName}`;
+    if (commentTimeouts.current[timeoutKey]) {
+      clearTimeout(commentTimeouts.current[timeoutKey]);
+    }
+
+    // 1秒後に保存処理を実行するタイマーを設定
+    commentTimeouts.current[timeoutKey] = setTimeout(() => {
+      // 最新のタスクリストから該当タスクと担当者を見つける
+      const currentTask = tasks.find(t => t.id === taskId);
+      if (currentTask) {
+        const currentAssignee = currentTask.assignees.find(a => a.name === assigneeName);
+        if (currentAssignee) {
+          handleAssigneeUpdate(currentTask, currentAssignee.name, currentAssignee.completed, currentAssignee.comment);
+        }
+      }
+    }, 1000); // 1秒 (1000ミリ秒)
   };
 
   const handleAssigneeUpdate = async (task, assigneeName, completed, comment) => {
@@ -261,7 +280,6 @@ function TaskApp() {
                             <textarea
                               value={assignee.comment || ''}
                               onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                              onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                               placeholder="コメント"
                             />
                           </div>
@@ -323,7 +341,6 @@ function TaskApp() {
                               <textarea
                                 value={assignee.comment || ''}
                                 onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                                onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                                 placeholder="コメント"
                               />
                             </div>
