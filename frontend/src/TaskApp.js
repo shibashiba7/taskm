@@ -308,7 +308,7 @@ function TaskApp() {
                     <td>{task.taskName}</td>
                     <td>
                       {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                      <span className="due-today-icon">期限切れ！</span>
+                      
                     </td>
                     <td>
                       {task.assignees.map((assignee) => (
