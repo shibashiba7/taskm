@@ -24,7 +24,8 @@
         "completed": true,
         "completedAt": "2025-08-06T05:40:39.535Z"
       }
-    ]
+    ],
+    "taskType": "office"
   },
   {
     "id": 1754527461175,
@@ -37,6 +38,7 @@
         "completedAt": null,
         "comment": ""
       }
-    ]
+    ],
+    "taskType": "office"
   }
 ]
