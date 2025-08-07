@@ -9,7 +9,7 @@ const tasksFilePath = path.join(__dirname, 'tasks.json');
 const assigneesFilePath = path.join(__dirname, 'assignees.json');
 
 const corsOptions = {
-  origin: 'https://shibashiba7.github.io',
+  origin: '*', // すべてのオリジンを許可 (デバッグ用)
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));

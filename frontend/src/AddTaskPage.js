@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './TaskApp.css'; // 既存のCSSを再利用
 
-const API_BASE_URL = 'https://taskm-backend-9f3m.onrender.com';
+const API_BASE_URL = 'https://taskm-zh97.onrender.com';
 const TASKS_API_URL = `${API_BASE_URL}/api/tasks`;
 const ASSIGNEES_API_URL = `${API_BASE_URL}/api/assignees`;
 
