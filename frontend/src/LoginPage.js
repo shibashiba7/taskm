@@ -22,7 +22,6 @@ function LoginPage() {
         const data = await response.json();
         localStorage.setItem('token', data.token); // トークンを保存
         navigate('/tasks/office'); // ログイン成功後、タスク一覧へ
-        console.log('Navigating to /tasks/office');
       } else {
         alert('ログインに失敗しました。');
       }
