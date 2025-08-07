@@ -75,11 +75,87 @@ function TaskApp() {
 
   
 
-  const handleAssigneeUpdate = async (task, assigneeName, completed) => {
+  const handleCommentChange = (taskId, assigneeName, newComment) => {
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            assignees: task.assignees.map(assignee => {
+              if (assignee.name === assigneeName) {
+                return { ...assignee, comment: newComment };
+              }
+              return assignee;
+            }),
+          };
+        }
+        return task;
+      });
+    });
+  };
+
+  const handleCommentChange = (taskId, assigneeName, newComment) => {
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            assignees: task.assignees.map(assignee => {
+              if (assignee.name === assigneeName) {
+                return { ...assignee, comment: newComment };
+              }
+              return assignee;
+            }),
+          };
+        }
+        return task;
+      });
+    });
+  };
+
+  const handleCommentChange = (taskId, assigneeName, newComment) => {
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            assignees: task.assignees.map(assignee => {
+              if (assignee.name === assigneeName) {
+                return { ...assignee, comment: newComment };
+              }
+              return assignee;
+            }),
+          };
+        }
+        return task;
+      });
+    });
+  };
+
+  const handleCommentChange = (taskId, assigneeName, newComment) => {
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            assignees: task.assignees.map(assignee => {
+              if (assignee.name === assigneeName) {
+                return { ...assignee, comment: newComment };
+              }
+              return assignee;
+            }),
+          };
+        }
+        return task;
+      });
+    });
+  };
+
+  const handleAssigneeUpdate = async (task, assigneeName, completed, comment) => {
     const response = await fetch(`${TASKS_API_URL}/${task.id}/assignee`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assigneeName, completed, comment }),
+                  body: JSON.stringify({ assigneeName, completed, comment }),
     });
     if (response.ok) fetchTasks();
   };
@@ -231,7 +307,7 @@ function TaskApp() {
                     <>
                       <td>{task.taskName}</td>
                       <td>
-                        {new Date(task.dueDate).toLocaleDateString()}
+                        {new Date(task.dueDate).toLocaleDateString('ja-JP', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         {diffDays <= 0 && <span className="due-today-icon">本日期限！</span>}
                       </td>
                       <td>
@@ -241,17 +317,14 @@ function TaskApp() {
                               <input
                                 type="checkbox"
                                 checked={assignee.completed}
-                                onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed)}
+                                onChange={() => handleAssigneeUpdate(task, assignee.name, !assignee.completed, assignee.comment)}
                               />
                               {assignee.name}
                               {assignee.completedAt && ` (完了: ${new Date(assignee.completedAt).toLocaleString()})`}
                             </label>
-                            
-                          <div className="comment-input-group">
-                              <textarea
-                                value={assignee.comment || ''}
-                                onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                                placeholder="コメント"
-                              />
-                              <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
-                            </div>
+                            <textarea
+                              value={assignee.comment || ''}
+                              onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
+                              placeholder="コメント"
+                            />
+                            <button onClick={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)} className="save-comment-button">保存</button>
