@@ -261,12 +261,7 @@ function TaskApp() {
                             <textarea
                               value={assignee.comment || ''}
                               onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault(); // Enterキーでの改行を防ぐ
-                                  handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment);
-                                }
-                              }}
+                              onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                               placeholder="コメント"
                             />
                           </div>
@@ -328,12 +323,7 @@ function TaskApp() {
                               <textarea
                                 value={assignee.comment || ''}
                                 onChange={(e) => handleCommentChange(task.id, assignee.name, e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault(); // Enterキーでの改行を防ぐ
-                                    handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment);
-                                  }
-                                }}
+                                onBlur={() => handleAssigneeUpdate(task, assignee.name, assignee.completed, assignee.comment)}
                                 placeholder="コメント"
                               />
                             </div>
