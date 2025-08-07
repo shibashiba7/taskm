@@ -11,7 +11,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    console.log('AuthContext useEffect triggered. Token:', token);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
