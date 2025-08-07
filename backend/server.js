@@ -9,7 +9,7 @@ const tasksFilePath = path.join(__dirname, 'tasks.json');
 const assigneesFilePath = path.join(__dirname, 'assignees.json');
 
 const corsOptions = {
-  origin: '*', // すべてのオリジンを許可 (デバッグ用)
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000', // 環境変数CORS_ORIGINがあればそれを使用、なければlocalhost:3000
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));

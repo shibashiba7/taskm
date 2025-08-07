@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'; // 追加
 import TaskEditForm from './TaskEditForm';
 import './TaskApp.css';
 
-const API_BASE_URL = 'https://taskm-zh97.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const TASKS_API_URL = `${API_BASE_URL}/api/tasks`;
 const ASSIGNEES_API_URL = `${API_BASE_URL}/api/assignees`;
 
